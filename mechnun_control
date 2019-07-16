@@ -1,0 +1,107 @@
+/*
+定义轮子的尺寸
+假定轮子夹角为45
+轮子的排布方式,
+2/\1
+3\/4
+根据要求的整辆小车的运动速度，包括平动速度v，转动速度w，得到每个轮子的角速度
+*/
+#include<iostream>
+#include<cmath>
+
+const double PI = atan(1) * 4;
+
+class Wheel {
+public:
+	const double radius_;//轮子半径
+	double angular_speed_;//角速度
+	int num_;//轮子序号
+	double angle_ = atan(1);
+
+	//默认构造函数，需给出半径
+	Wheel(double r,int num):radius_(r),num_(num){
+		//std::cout << "wheel" << num_ << std::endl;
+	}
+	//析构函数
+	~Wheel(){}
+
+	//传入轮子的线速度，设置轮子的角速度,并将其返回
+	double set_w(double v) {
+		angular_speed_ = v/radius_;
+		return angular_speed_;
+	}
+
+	//获取角速度
+	double get_w() const{
+		return angular_speed_;
+	}
+
+	//打印信息
+	void show()const {
+		std::cout << "wheel" << num_ << ": " << angular_speed_ << std::endl;
+	}
+};
+
+class SmallCar
+{
+public:
+	Wheel wheel1,wheel2,wheel3,wheel4;//4个轮子
+	double V_x, V_y, W_;//横轴速度，纵轴速度，角速度，车辆本身的坐标系
+	double width_half, length_half;//车宽度的一半，长度的一半
+
+	SmallCar(double r,double width,double length) :
+		wheel1(r, 1), wheel2(r, 2), wheel3(r, 3), wheel4(r, 4),width_half(width/2.0),length_half(length/2.0) {
+		//std::cout << "build a car\n";
+	};
+	~SmallCar() {};
+
+	void set_v(double vx, double vy, double w) {
+		//设置速度
+		V_x = vx; V_y = vy; W_ = w;
+		
+		//根据公式设置轮子角速度
+		wheel1.set_w(V_y - V_x + W_ * (width_half + length_half));
+		wheel2.set_w(V_y + V_x - W_ * (width_half + length_half));
+		wheel3.set_w(V_y - V_x - W_ * (width_half + length_half));
+		wheel4.set_w(V_y + V_x + W_ * (width_half + length_half));
+
+		show();
+		test();
+	}
+
+	void show()const {
+		wheel1.show();
+		wheel2.show();
+		wheel3.show();
+		wheel4.show();
+	}
+
+	void test() {
+		double vx_, vy_, w_;
+		vx_ = tan(wheel1.angle_)*(-wheel1.angular_speed_ + wheel2.angular_speed_ - wheel3.angular_speed_ + wheel4.angular_speed_)*wheel1.radius_ / 4.0;
+		vy_ = (wheel1.angular_speed_ + wheel2.angular_speed_ + wheel3.angular_speed_ + wheel4.angular_speed_)*wheel1.radius_ / 4.0;
+		w_ = (wheel1.angular_speed_ - wheel2.angular_speed_ - wheel3.angular_speed_ + wheel4.angular_speed_)*wheel1.radius_ / 4.0/(width_half+(length_half/tan(wheel1.angle_)));
+		std::cout << "正运动学求出来的速度：" << "vx = " << vx_
+			<< "\tvy = " << vy_ << "\tw = " << w_ << std::endl;
+	}
+};
+
+int main() {
+
+	SmallCar sm1(2.0, 2.0, 3.0);
+	double vx, vy, w;
+	int flag = 1;
+
+	while (flag) {
+
+		std::cout << "请输入横轴速度，纵轴速度，角速度：" << std::endl;
+		std::cin >> vx >> vy >> w;
+		sm1.set_v(vx, vy, w);
+
+		std::cout << "输入0退出，其他继续执行：" << std::endl;
+		std::cin >> flag;
+	}
+	std::cout << tan(45);
+	getchar();
+	return 0;
+}
